@@ -1,6 +1,7 @@
 #include "functions.h"
 
 #include <iostream>
+#include <chrono>
 using namespace std;
 
 //code snippet from https://www.geeksforgeeks.org/insertion-in-binary-search-tree
@@ -98,3 +99,149 @@ Node* delNode(Node* root, int x) {
     return root;
 }
 //end code snippet
+
+//code snippet from https://www.geeksforgeeks.org/binary-search-tree-set-1-search-and-insertion
+
+// function to search a key in a BST
+Node* search(Node* root, int key) {
+
+    // Base Cases: root is null or key 
+    // is present at root
+    if (root == NULL || root->key == key)
+        return root;
+
+    // Key is greater than root's key
+    if (root->key < key)
+        return search(root->right, key);
+
+    // Key is smaller than root's key
+    return search(root->left, key);
+}
+//end code snippet
+
+// code snippet from https://www.geeksforgeeks.org/find-the-node-with-maximum-value-in-a-binary-search-tree/
+// Function to find the node with maximum value
+// i.e. rightmost leaf node
+int maxValue(struct Node* node)
+{
+    /* loop down to find the rightmost leaf */
+    Node* current = node;
+    while (current->right != nullptr)
+        current = current->right;
+
+    return (current->key);
+}
+
+//end code snippet
+
+Node* generateRandomTree(Node* root, int count) {
+    srand(time(nullptr));
+    for (int i = 0; i < count; ++i) {
+        int num = rand() % 1000; // Random integers between 0 and 999
+        cout << "Inserting: " << num << endl;
+        root = insert(root, num);
+    }
+    return root;
+}
+
+void runTests(Node* root) {
+    if (!root) {
+        cout << "Error: Tree is empty. Populate the tree before running tests." << endl;
+        return;
+    }
+
+    cout << "=== Initial In-Order Traversal of Randomly Generated Tree ===" << endl;
+    inorder(root);
+    cout << endl;
+
+    cout << "=== Test 1: Attempting to remove a node from an empty BST ===" << endl;
+    Node* emptyTree = nullptr;
+    emptyTree = delNode(emptyTree, 10); // Should gracefully handle empty tree
+    cout << "Result: No errors encountered when removing from an empty BST." << endl;
+
+    cout << "=== Test 2: Attempting to insert a duplicate value ===" << endl;
+    int duplicateValue = root->key; // Use the root's value as a duplicate
+    cout << "Inserting duplicate value: " << duplicateValue << endl;
+    root = insert(root, duplicateValue);
+    inorder(root);
+    cout << endl;
+
+    cout << "=== Test 3: Removing a node with no children ===" << endl;
+    int leafNode = findLeafNode(root); // Helper function to find a leaf node
+    cout << "Removing leaf node: " << leafNode << endl;
+    root = delNode(root, leafNode);
+    inorder(root);
+    cout << endl;
+
+    cout << "=== Test 4: Removing a node with one child ===" << endl;
+    int oneChildNode = findNodeWithOneChild(root); // Helper to find such a node
+    if (oneChildNode != -1) {
+        cout << "Removing node with one child: " << oneChildNode << endl;
+        root = delNode(root, oneChildNode);
+        inorder(root);
+        cout << endl;
+    }
+    else {
+        cout << "No nodes with one child were found in the current tree." << endl;
+    }
+
+    cout << "=== Test 5: Removing a node with two children ===" << endl;
+    int twoChildrenNode = findNodeWithTwoChildren(root); // Helper to find such a node
+    if (twoChildrenNode != -1) {
+        cout << "Removing node with two children: " << twoChildrenNode << endl;
+        root = delNode(root, twoChildrenNode);
+        inorder(root);
+        cout << endl;
+    }
+    else {
+        cout << "No nodes with two children were found in the current tree." << endl;
+    }
+
+    cout << "=== Final In-Order Traversal After All Tests ===" << endl;
+    inorder(root);
+    cout << endl;
+}
+
+// Example helper functions to find specific types of nodes
+int findLeafNode(Node* root) {
+    if (!root) return -1;
+    if (!root->left && !root->right) return root->key;
+    int leftResult = root->left ? findLeafNode(root->left) : -1;
+    int rightResult = root->right ? findLeafNode(root->right) : -1;
+    return leftResult != -1 ? leftResult : rightResult;
+}
+
+int findNodeWithOneChild(Node* root) {
+    if (!root) return -1;
+    if ((root->left && !root->right) || (!root->left && root->right)) return root->key;
+    int leftResult = findNodeWithOneChild(root->left);
+    int rightResult = findNodeWithOneChild(root->right);
+    return leftResult != -1 ? leftResult : rightResult;
+}
+
+int findNodeWithTwoChildren(Node* root) {
+    if (!root) return -1;
+    if (root->left && root->right) return root->key;
+    int leftResult = findNodeWithTwoChildren(root->left);
+    int rightResult = findNodeWithTwoChildren(root->right);
+    return leftResult != -1 ? leftResult : rightResult;
+}
+
+void performanceTest(int numNodes) {
+    Node* root = nullptr;
+    srand(time(nullptr));
+
+    cout << "Testing insertion performance for " << numNodes << " nodes..." << endl;
+
+    auto start = chrono::high_resolution_clock::now();
+    for (int i = 0; i < numNodes; ++i) {
+        int randomValue = rand() % 10000;
+        root = insert(root, randomValue);
+    }
+    auto end = chrono::high_resolution_clock::now();
+
+    chrono::duration<double> elapsed = end - start;
+    cout << "Time taken to insert " << numNodes << " nodes: "
+        << elapsed.count() << " seconds" << endl;
+
+}
